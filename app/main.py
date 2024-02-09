@@ -8,7 +8,7 @@ app = FastAPI()
 
 @app.get("/")
 def hello_world():
-    return "Hello Sebas"
+    return "Hello Bastian"
 
 # run the app with uvicorn
 # uvicorn app:app --reload
@@ -19,5 +19,4 @@ def hello_world():
 
 
 if __name__ == "__main__":
-
-    uvicorn.run("app:app", reload=True, host="localhost", port=8000)
+   uvicorn.run("app:app", reload=True, host="localhost", port=8000)
