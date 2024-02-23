@@ -1,26 +1,46 @@
-from azure.identity import DefaultAzureCredential, ClientSecretCredential
+from azure.identity import DefaultAzureCredential, ClientSecretCredential, AzureCliCredential
+
+from azure.mgmt.resource import ResourceManagementClient
+
 from azure.mgmt.containerservice import ContainerServiceClient
 from azure.mgmt.containerinstance import ContainerInstanceManagementClient
 from azure.mgmt.containerinstance.models import (
-        ContainerGroup,
-        Container,
-        ContainerPort,
-        ImageRegistryCredential,
-        ResourceRequests,
-        ResourceRequirements,
-        OperatingSystemTypes
+    ContainerGroup,
+    Container,
+    ContainerPort,
+    ImageRegistryCredential,
+    ResourceRequests,
+    ResourceRequirements,
+    OperatingSystemTypes
 )
 
 import os
 
-name = 'DailyFortuneV2'
-resource_group_name = f"{name}_RGN"
-container_group_name = f"{name}_CGN"
-container_name = f"{name}_CN"
+name = 'fortunecookiev3'
+resource_group_name = f"{name}-rg"
+container_group_name = f"{name}-cgn"  # there may be no upper cases and no underscores in the names
+container_name = f"{name}-cn"
 container_image = ''    # TODO path to the container in the container registry
 
+# this loads the credentials from the environment variables
 credentials = DefaultAzureCredential()
-subscription_id = "4c9e9e55-06ef-4fed-8a11-9a545431049c"    # TODO: Look up on the internet
+
+# cli_credentials = AzureCliCredential()
+# this is not necessary, we can instead just use the DefaultAzureCredential
+
+# NOTE we need to create an Applictation manually first in the Azure Portal
+# NOTE add a 'role assigment' for the Application in the Azure Portal.
+# To do this, we set the application name as 'highly privileged' in the role assigment
+client_id = os.environ['AZURE_CLIENT_ID']
+client_secret = os.environ['AZURE_CLIENT_SECRET']
+tenant_id = os.environ['AZURE_TENANT_ID']  # os.environ['ATID']  # found under Microsoft Entra ID in Azure Portal
+subscription_id = os.environ["AZURE_SUBSCRIPTION_ID"]    # search for subscription_id in the azure portal
+
+
+# create a Resource Management client
+resource_client = ResourceManagementClient(credential=credentials, subscription_id=subscription_id)
+rg_result = resource_client.resource_groups.create_or_update(
+    resource_group_name, {'location': 'northeurope'})  # type: ignore
 
 # Define container service client
 client = ContainerServiceClient(credentials, subscription_id)
@@ -31,14 +51,19 @@ container_instance_client = ContainerInstanceManagementClient(credentials, subsc
 container_resource_request = ResourceRequests(memory_in_gb=1, cpu=1)
 container_resource_requirements = ResourceRequirements(requests=container_resource_request)
 container_port = ContainerPort(port=80)
-container = Container(name=container_name, image=container_image, resources=container_resource_requirements, ports=[container_port])
-container_group = ContainerGroup(location='northeurope', containers=[container], os_type=OperatingSystemTypes.linux)
+container = Container(name=container_name, image=container_image,
+                      resources=container_resource_requirements, ports=[container_port])
+container_group = ContainerGroup(
+    location='northeurope', containers=[container],
+    os_type=OperatingSystemTypes.linux)  # type: ignore
 
-tenant_id = os.environ['ATID']
-client_id = os.environ['ACID']
-client_secret = os.environ['ACS']
 
-response = container_instance_client.container_groups.begin_create_or_update(resource_group_name, container_group_name, container_group)
+# create azure resource group from python SDK
+
+
+response = container_instance_client.container_groups.begin_create_or_update(
+    resource_group_name, container_group_name, container_group)
+
 # from IPython import embd; embed()
 print(response.result)
 
@@ -82,4 +107,3 @@ az keyvault secret set \
     --name $ACR_NAME-pull-usr \
     --value $(az ad sp list --display-name $ACR_NAME-pull --query [].appId --output tsv)
 """
-
