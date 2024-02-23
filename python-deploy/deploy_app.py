@@ -13,10 +13,11 @@ from azure.mgmt.containerinstance.models import (
     ResourceRequirements,
     OperatingSystemTypes
 )
-
+from dotenv import load_dotenv
 import os
-
 name = 'fortunecookiev3'
+
+
 resource_group_name = f"{name}-rg"
 container_group_name = f"{name}-cgn"  # there may be no upper cases and no underscores in the names
 container_name = f"{name}-cn"
@@ -31,11 +32,16 @@ credentials = DefaultAzureCredential()
 # NOTE we need to create an Applictation manually first in the Azure Portal
 # NOTE add a 'role assigment' for the Application in the Azure Portal.
 # To do this, we set the application name as 'highly privileged' in the role assigment
+
+load_dotenv("azure_credentials.env")
+
 client_id = os.environ['AZURE_CLIENT_ID']
 client_secret = os.environ['AZURE_CLIENT_SECRET']
 tenant_id = os.environ['AZURE_TENANT_ID']  # os.environ['ATID']  # found under Microsoft Entra ID in Azure Portal
 subscription_id = os.environ["AZURE_SUBSCRIPTION_ID"]    # search for subscription_id in the azure portal
 
+# check that the variables are all set:
+assert all([client_id, client_secret, tenant_id, subscription_id])
 
 # create a Resource Management client
 resource_client = ResourceManagementClient(credential=credentials, subscription_id=subscription_id)
