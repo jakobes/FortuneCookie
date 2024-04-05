@@ -19,9 +19,11 @@ name = 'fortunecookiev3'
 
 
 resource_group_name = f"{name}-rg"
-container_group_name = f"{name}-cgn"  # there may be no upper cases and no underscores in the names
+# there may be no upper cases and no underscores in the names
+container_group_name = f"{name}-cgn"
 container_name = f"{name}-cn"
-container_image = ''    # TODO path to the container in the container registry
+# TODO path to the container in the container registry
+container_image = ''
 
 # this loads the credentials from the environment variables
 credentials = DefaultAzureCredential()
@@ -37,14 +39,17 @@ load_dotenv("azure_credentials.env")
 
 client_id = os.environ['AZURE_CLIENT_ID']
 client_secret = os.environ['AZURE_CLIENT_SECRET']
-tenant_id = os.environ['AZURE_TENANT_ID']  # os.environ['ATID']  # found under Microsoft Entra ID in Azure Portal
-subscription_id = os.environ["AZURE_SUBSCRIPTION_ID"]    # search for subscription_id in the azure portal
+# os.environ['ATID']  # found under Microsoft Entra ID in Azure Portal
+tenant_id = os.environ['AZURE_TENANT_ID']
+# search for subscription_id in the azure portal
+subscription_id = os.environ["AZURE_SUBSCRIPTION_ID"]
 
 # check that the variables are all set:
 assert all([client_id, client_secret, tenant_id, subscription_id])
 
 # create a Resource Management client
-resource_client = ResourceManagementClient(credential=credentials, subscription_id=subscription_id)
+resource_client = ResourceManagementClient(
+    credential=credentials, subscription_id=subscription_id)
 rg_result = resource_client.resource_groups.create_or_update(
     resource_group_name, {'location': 'northeurope'})  # type: ignore
 
@@ -52,10 +57,12 @@ rg_result = resource_client.resource_groups.create_or_update(
 client = ContainerServiceClient(credentials, subscription_id)
 
 # Initialize the Container Instance Management Client
-container_instance_client = ContainerInstanceManagementClient(credentials, subscription_id)
+container_instance_client = ContainerInstanceManagementClient(
+    credentials, subscription_id)
 
 container_resource_request = ResourceRequests(memory_in_gb=1, cpu=1)
-container_resource_requirements = ResourceRequirements(requests=container_resource_request)
+container_resource_requirements = ResourceRequirements(
+    requests=container_resource_request)
 container_port = ContainerPort(port=80)
 container = Container(name=container_name, image=container_image,
                       resources=container_resource_requirements, ports=[container_port])

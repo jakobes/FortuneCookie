@@ -19,4 +19,4 @@ def hello_world():
 
 
 if __name__ == "__main__":
-   uvicorn.run("app:app", reload=True, host="localhost", port=8000)
+    uvicorn.run("app:app", reload=True, host="0.0.0.0", port=80)
