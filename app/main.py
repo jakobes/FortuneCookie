@@ -1,6 +1,7 @@
 # create a fastapi app
 # the app should respond with 'Hello World' when a GET request is made
 
+import os
 import uvicorn
 from fastapi import FastAPI
 app = FastAPI()
@@ -19,4 +20,8 @@ def hello_world():
 
 
 if __name__ == "__main__":
-    uvicorn.run("app:app", reload=True, host="0.0.0.0", port=80)
+    HOST_IP = os.getenv("HOST_IP", None)
+    if HOST_IP is None:
+        raise RuntimeError("HOST_IP is not set")
+    uvicorn.run("app:app", reload=True, host=HOST_IP, port=80)
+    # uvicorn.run("app:app", reload=True, host="0.0.0.0", port=80)
